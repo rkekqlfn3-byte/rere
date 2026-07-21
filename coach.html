@@ -98,12 +98,8 @@
           <h2 class="fw-bold text-primary mb-2">코치 전용 업무 절차 및 자료실</h2>
           <p class="text-muted">컨설팅 표준 7단계 프로세스 및 필수 행정 서식을 일괄 제공합니다.</p>
         </div>
-        <ul class="nav nav-pills nav-pills-custom justify-content-center mb-4">
-          <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#notice-section" type="button">1-0. 공지사항 및 Q&A</button></li>
-          <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#procedure-section" type="button">1-1. 코칭 3단계 프로세스 통합 안내</button></li>
-        </ul>
-        <div class="tab-content">
-          <div class="tab-pane fade show active" id="notice-section" role="tabpanel">
+        <div class="d-flex flex-column gap-4">
+          <div id="notice-section">
             <h4 class="section-title mb-4"><i class="bi bi-megaphone-fill text-danger me-2"></i>공지사항</h4>
             <div class="card card-custom p-4 mb-5 border-top border-danger border-4 shadow-sm">
               <div class="accordion accordion-flush" id="noticeAccordion">
@@ -118,7 +114,11 @@
               </div>
             </div>
           </div>
-          <div class="tab-pane fade" id="procedure-section" role="tabpanel">
+          
+          <hr class="text-muted opacity-25 my-4">
+
+          <div id="procedure-section">
+            <h4 class="section-title mb-4"><i class="bi bi-diagram-3-fill text-primary me-2"></i>코칭 3단계 프로세스 통합 안내</h4>
             <div class="accordion accordion-flush" id="threeStepAccordion">
               
               <!-- 1단계 -->
