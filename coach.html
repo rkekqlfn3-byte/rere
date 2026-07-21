@@ -100,24 +100,40 @@
           <p class="text-muted">주요 변경사항을 확인하고 코칭 관련 궁금증을 해결하세요.</p>
         </div>
         
-        <div class="d-flex flex-column gap-4">
-          <div id="notice-section">
-            <h4 class="section-title mb-4"><i class="bi bi-megaphone-fill text-danger me-2"></i>공지사항</h4>
-            <div class="card card-custom p-4 mb-5 border-top border-danger border-4 shadow-sm">
+        <div class="row g-4" id="notice-section">
+          <!-- 공지사항 (Left) -->
+          <div class="col-lg-4 d-flex flex-column">
+            <h4 class="section-title mb-3"><i class="bi bi-megaphone-fill text-danger me-2"></i>공지사항</h4>
+            <div class="card card-custom p-4 flex-grow-1 border-top border-danger border-4 shadow-sm custom-scrollbar" style="max-height: 600px; overflow-y: auto;">
               <div class="accordion accordion-flush" id="noticeAccordion">
                 <div class="text-center text-muted py-5">공지사항 데이터를 불러오는 중입니다...</div>
               </div>
             </div>
+          </div>
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <h4 class="section-title mb-0"><i class="bi bi-question-circle-fill text-info me-2"></i>자주 묻는 질문 (Q&A)</h4>
-              <button data-bs-toggle="modal" data-bs-target="#qnaModal" class="btn btn-info text-white fw-bold shadow-sm rounded-pill px-4"><i class="bi bi-pencil-square me-2"></i>개별 질문 남기기</button>
+          <!-- FAQ (Middle) -->
+          <div class="col-lg-4 d-flex flex-column">
+            <h4 class="section-title mb-3"><i class="bi bi-info-circle-fill text-primary me-2"></i>자주 묻는 질문</h4>
+            <div class="card card-custom p-4 flex-grow-1 border-top border-primary border-4 shadow-sm custom-scrollbar" style="max-height: 600px; overflow-y: auto;">
+              <div class="accordion accordion-flush" id="faqAccordion">
+                <div class="text-center text-muted py-5">FAQ 데이터를 불러오는 중입니다...</div>
+              </div>
             </div>
-            <div class="card card-custom p-0 mb-4 border-top border-info border-4 shadow-sm overflow-hidden">
+          </div>
+
+          <!-- QnA 게시판 (Right) -->
+          <div class="col-lg-4 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h4 class="section-title mb-0"><i class="bi bi-question-circle-fill text-info me-2"></i>개별 Q&A</h4>
+              <button data-bs-toggle="modal" data-bs-target="#qnaModal" class="btn btn-sm btn-info text-white fw-bold shadow-sm rounded-pill px-3"><i class="bi bi-pencil-square me-1"></i>질문 남기기</button>
+            </div>
+            <div class="card card-custom p-0 flex-grow-1 border-top border-info border-4 shadow-sm overflow-hidden custom-scrollbar" style="max-height: 600px; overflow-y: auto;">
               <div class="table-responsive" id="qnaBoardContainer">
                 <div class="text-center text-muted py-5">Q&A 데이터를 불러오는 중입니다...</div>
               </div>
             </div>
+          </div>
+        </div>
 
             <!-- QnA Modal -->
             <div class="modal fade" id="qnaModal" tabindex="-1" aria-hidden="true">
@@ -438,6 +454,7 @@
   //
   let FORM_PACKAGES = [];
   let NOTICES = [];
+  let FAQ_LIST = [];
   let QNA_LIST = [];
 
   // 구글 시트(공개)에서 QnA 리스트 불러오기
@@ -501,13 +518,11 @@
     
     // 테이블 헤더
     let tableHTML = `
-      <table class="table table-hover align-middle mb-0" style="font-size: 0.95rem;">
+      <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
         <thead class="table-light">
           <tr>
-            <th class="text-center" style="width: 10%;">상태</th>
-            <th style="width: 60%;">질문 내용</th>
-            <th class="text-center" style="width: 15%;">작성자</th>
-            <th class="text-center" style="width: 15%;">작성일</th>
+            <th class="text-center" style="width: 25%;">상태</th>
+            <th style="width: 75%;">질문 및 작성자</th>
           </tr>
         </thead>
         <tbody id="qnaTableBody">
@@ -520,28 +535,29 @@
     reversedQna.forEach((qna, idx) => {
       const isAnswered = qna.answer && qna.answer.trim().length > 0;
       const statusBadge = isAnswered 
-        ? `<span class="badge bg-primary rounded-pill px-3">답변 완료</span>` 
-        : `<span class="badge bg-secondary rounded-pill px-3">답변 대기</span>`;
+        ? `<span class="badge bg-primary w-100 rounded-pill">답변 완료</span>` 
+        : `<span class="badge bg-secondary w-100 rounded-pill">답변 대기</span>`;
       
       const rowId = `qnaCollapse${idx}`;
 
       tableHTML += `
         <tr style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#${rowId}" aria-expanded="false" aria-controls="${rowId}">
-          <td class="text-center">${statusBadge}</td>
-          <td class="fw-bold text-dark text-truncate" style="max-width: 300px;">${qna.question}</td>
-          <td class="text-center text-muted small">${qna.author}</td>
-          <td class="text-center text-muted small">${qna.date}</td>
+          <td class="text-center align-middle">${statusBadge}</td>
+          <td>
+            <div class="fw-bold text-dark text-truncate" style="max-width: 170px;">${qna.question}</div>
+            <div class="text-muted mt-1" style="font-size: 0.75rem;">${qna.author} | ${qna.date}</div>
+          </td>
         </tr>
         <tr>
-          <td colspan="4" class="p-0 border-0">
+          <td colspan="2" class="p-0 border-0">
             <div class="collapse" id="${rowId}" data-bs-parent="#qnaTableBody">
-              <div class="p-4 bg-light text-dark" style="border-bottom: 1px solid #dee2e6; white-space: pre-line; line-height: 1.6;">
-                <div class="mb-3">
+              <div class="p-3 bg-light text-dark" style="border-bottom: 1px solid #dee2e6; white-space: pre-line; line-height: 1.5; font-size: 0.85rem;">
+                <div class="mb-2">
                   <span class="badge bg-info text-dark me-2">Q</span> <span class="fw-bold">${qna.question}</span>
                 </div>
                 <div>
                   <span class="badge bg-secondary me-2">A</span> 
-                  ${isAnswered ? qna.answer : '<span class="text-muted">아직 답변이 등록되지 않았습니다. 조금만 기다려주세요!</span>'}
+                  ${isAnswered ? qna.answer : '<span class="text-muted">아직 답변이 등록되지 않았습니다.</span>'}
                 </div>
               </div>
             </div>
@@ -609,9 +625,71 @@
       renderNotices();
     } catch(e) {
       console.error("공지사항 연동 실패:", e);
-      document.getElementById('noticeAccordion').innerHTML = '<div class="alert alert-danger">공지사항을 불러오지 못했습니다. 구글 시트 권한을 확인해 주세요.</div>';
+      document.getElementById('noticeAccordion').innerHTML = '<div class="alert alert-danger">공지사항을 불러오지 못했습니다.</div>';
     }
   };
+
+  // 구글 시트(공개)에서 FAQ 리스트 불러오기
+  function loadFaqFromSheet() {
+    const SHEET_ID = '1FPC06ZjhCXKIzgX51Zkpfi8VNdz_SAGs302vHUWYEs4';
+    const cb = new Date().getTime();
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:processFaqData&sheet=FAQ&t=${cb}`;
+    const script = document.createElement('script');
+    script.src = url;
+    document.body.appendChild(script);
+  }
+
+  // FAQ JSONP 콜백
+  window.processFaqData = function(data) {
+    try {
+      const rows = data.table.rows;
+      FAQ_LIST = [];
+      rows.forEach((row, idx) => {
+        if(idx === 0) return; // 첫 번째 줄(헤더) 무시
+        if(!row || !row.c || !row.c[0] || !row.c[0].v) return;
+        const q = row.c[0].v;
+        const a = row.c[1] && row.c[1].v ? row.c[1].v : '';
+        FAQ_LIST.push({ q, a });
+      });
+      renderFaq();
+    } catch(e) {
+      console.error("FAQ 연동 실패:", e);
+      document.getElementById('faqAccordion').innerHTML = '<div class="alert alert-danger">FAQ를 불러오지 못했습니다. 구글 시트에 FAQ 시트가 있는지 확인해 주세요.</div>';
+    }
+  };
+
+  function renderFaq() {
+    const container = document.getElementById('faqAccordion');
+    if (!container) return;
+    if (FAQ_LIST.length === 0) {
+      container.innerHTML = '<div class="text-center text-muted py-4">등록된 자주 묻는 질문이 없습니다.</div>';
+      return;
+    }
+    
+    container.innerHTML = '';
+    FAQ_LIST.forEach((item, idx) => {
+      const accordionId = `faqItem${idx}`;
+      const itemHTML = `
+        <div class="accordion-item shadow-sm mb-2" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#${accordionId}">
+              <div class="d-flex w-100 justify-content-between align-items-center pe-3">
+                <div class="text-truncate pe-2">
+                  <span class="badge bg-primary me-2">Q</span>
+                  <span class="fw-bold text-dark" style="font-size: 0.95rem;">${item.q}</span>
+                </div>
+              </div>
+            </button>
+          </h2>
+          <div id="${accordionId}" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body bg-light" style="white-space: pre-line; line-height: 1.6; font-size: 0.9rem; border-top: 1px dashed #ced4da;">
+              <span class="badge bg-secondary me-2">A</span>${item.a}
+            </div>
+          </div>
+        </div>`;
+      container.innerHTML += itemHTML;
+    });
+  }
 
   // 공지사항 아코디언 렌더링
   function renderNotices() {
@@ -913,6 +991,7 @@ async function loadAccessLogsToTable() {
   // 페이지 로드 시 기존 로그인 상태 확인
   window.addEventListener('DOMContentLoaded', () => {
     loadNoticesFromSheet(); // ★ 공지사항 자동 불러오기
+    loadFaqFromSheet();     // ★ FAQ 자동 불러오기
     loadQnaFromSheet();     // ★ QnA 자동 불러오기
     loadFormPackagesFromSheet(); // ★ 서식 패키지 구글 시트에서 자동 불러오기
     
