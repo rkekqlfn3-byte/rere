@@ -443,7 +443,8 @@
   // 구글 시트(공개)에서 QnA 리스트 불러오기
   function loadQnaFromSheet() {
     const SHEET_ID = '1FPC06ZjhCXKIzgX51Zkpfi8VNdz_SAGs302vHUWYEs4';
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:processQnaData&sheet=QnA`;
+    const cb = new Date().getTime();
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:processQnaData&sheet=QnA&t=${cb}`;
     const script = document.createElement('script');
     script.src = url;
     document.body.appendChild(script);
@@ -508,7 +509,8 @@
   // 구글 시트(공개)에서 공지사항 리스트 불러오기
   function loadNoticesFromSheet() {
     const SHEET_ID = '1FPC06ZjhCXKIzgX51Zkpfi8VNdz_SAGs302vHUWYEs4';
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:processNoticeData&sheet=공지사항`;
+    const cb = new Date().getTime();
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:processNoticeData&sheet=공지사항&t=${cb}`;
     const script = document.createElement('script');
     script.src = url;
     document.body.appendChild(script);
@@ -603,8 +605,9 @@
   function loadFormPackagesFromSheet() {
     // 회원님이 새로 주신 진짜 구글 시트 ID
     const SHEET_ID = '1FPC06ZjhCXKIzgX51Zkpfi8VNdz_SAGs302vHUWYEs4';
+    const cb = new Date().getTime();
     // 구글 시트 고유의 JSONP 콜백 파라미터 (tqx=responseHandler:콜백함수명) 및 sheet=file (3번째 탭)
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:processSheetData&sheet=file`;
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:processSheetData&sheet=file&t=${cb}`;
     
     const script = document.createElement('script');
     script.src = url;
@@ -669,8 +672,17 @@
         return;
       }
 
-      const filesHTML = pkg.files.map(f => {
-        if (f.badge === '별첨') {
+      // '별첨'이 포함된 뱃지를 가진 파일이 위로 오도록 정렬
+      const sortedFiles = pkg.files.sort((a, b) => {
+        const aIsAttachment = a.badge.includes('별첨');
+        const bIsAttachment = b.badge.includes('별첨');
+        if (aIsAttachment && !bIsAttachment) return -1;
+        if (!aIsAttachment && bIsAttachment) return 1;
+        return 0;
+      });
+
+      const filesHTML = sortedFiles.map(f => {
+        if (f.badge.includes('별첨')) {
           return `<div class="btn btn-light border text-start fw-bold shadow-sm d-flex justify-content-between align-items-center mb-2" style="cursor: default;">
                     <span><span class="badge bg-secondary text-white p-2 me-2" style="border-radius:8px;">${f.badge}</span>${f.label}</span>
                   </div>`;
