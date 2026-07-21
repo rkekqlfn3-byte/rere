@@ -889,11 +889,10 @@
 async function checkSecureLogin() {
     const id = document.getElementById('userName').value.trim();
     const pw = document.getElementById('userPw').value.trim();
-    const loginBtn = document.querySelector('button'); // 로그인 버튼
+    const loginBtn = document.querySelector('button');
     
     if (!id || !pw) { alert("아이디와 비밀번호를 입력해주세요."); return; }
 
-    // ★ 최고관리자 하드코딩 패스 ★
     if ((id === 'admin' || id === '관리자') && pw === 'admin') {
       localStorage.setItem('coach_logged_in_user', id);
       localStorage.setItem('login_time', new Date().getTime()); 
@@ -905,26 +904,58 @@ async function checkSecureLogin() {
     loginBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>인증 중...`;
     loginBtn.disabled = true;
 
-    try {
-      const response = await fetch(`${WEB_APP_URL}?id=${id}&pw=${pw}`);
-      const data = await response.json();
+    // 코치명단 시트에서 직접 ID/PW 확인 (CORS 우회 JSONP 방식)
+    const SHEET_ID = '1FPC06ZjhCXKIzgX51Zkpfi8VNdz_SAGs302vHUWYEs4';
+    const cb = 'loginCb_' + new Date().getTime();
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:${cb}&sheet=코치명단`;
 
-      if (data.success) {
-        // [수정] 성공 시 이름과 함께 '로그인 시간'을 저장합니다.
-        localStorage.setItem('coach_logged_in_user', data.name);
-        localStorage.setItem('login_time', new Date().getTime()); 
+    window[cb] = function(data) {
+      try {
+        let isAuthenticated = false;
+        let coachName = id;
+        const rows = data.table.rows;
         
-        saveAccessLog(data.name);
-        renderAuthorizedScreen(data.name);
-      } else {
-        alert("아이디 또는 비밀번호가 일치하지 않습니다.");
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (!row || !row.c || !row.c[0] || !row.c[1]) continue;
+          
+          const sheetId = String(row.c[0].v).trim();
+          const sheetPw = String(row.c[1].v).trim();
+          
+          if (sheetId === id && sheetPw === pw) {
+            isAuthenticated = true;
+            coachName = row.c[2] && row.c[2].v ? String(row.c[2].v).trim() : id;
+            break;
+          }
+        }
+
+        if (isAuthenticated) {
+          localStorage.setItem('coach_logged_in_user', coachName);
+          localStorage.setItem('login_time', new Date().getTime()); 
+          saveAccessLog(coachName);
+          renderAuthorizedScreen(coachName);
+        } else {
+          alert("아이디 또는 비밀번호가 일치하지 않습니다.");
+          loginBtn.innerHTML = "인증 및 접속하기";
+          loginBtn.disabled = false;
+        }
+      } catch (e) {
+        alert("로그인 처리 중 오류가 발생했습니다.");
+        loginBtn.innerHTML = "인증 및 접속하기";
+        loginBtn.disabled = false;
       }
-    } catch (error) {
-      alert("서버 연결 실패. 다시 시도해주세요.");
-    } finally {
+      delete window[cb];
+    };
+
+    const script = document.createElement('script');
+    script.src = url;
+    script.onerror = function() {
+      alert("서버 연결 실패. 인터넷 연결을 확인해주세요.");
       loginBtn.innerHTML = "인증 및 접속하기";
       loginBtn.disabled = false;
-    }
+      delete window[cb];
+    };
+    document.body.appendChild(script);
   }
 
   // --- 기존의 기능들은 그대로 유지됩니다 ---
