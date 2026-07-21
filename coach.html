@@ -100,39 +100,59 @@
           <p class="text-muted">주요 변경사항을 확인하고 코칭 관련 궁금증을 해결하세요.</p>
         </div>
         
-        <div class="row g-4" id="notice-section">
-          <!-- 공지사항 (Left) -->
-          <div class="col-lg-4 d-flex flex-column">
-            <h4 class="section-title mb-3"><i class="bi bi-megaphone-fill text-danger me-2"></i>공지사항</h4>
-            <div class="card card-custom p-4 flex-grow-1 border-top border-danger border-4 shadow-sm custom-scrollbar" style="max-height: 600px; overflow-y: auto;">
-              <div class="accordion accordion-flush" id="noticeAccordion">
-                <div class="text-center text-muted py-5">공지사항 데이터를 불러오는 중입니다...</div>
+        <div class="accordion accordion-flush" id="noticeFaqQnaAccordion">
+          
+          <!-- 1. 공지사항 -->
+          <div class="accordion-item shadow-sm mb-4 border rounded-4 overflow-hidden">
+            <h2 class="accordion-header">
+              <button class="accordion-button py-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNoticeSec" aria-expanded="true">
+                <h4 class="fw-bold mb-0 text-dark"><i class="bi bi-megaphone-fill text-danger me-2"></i>공지사항</h4>
+              </button>
+            </h2>
+            <div id="collapseNoticeSec" class="accordion-collapse collapse show" data-bs-parent="#noticeFaqQnaAccordion">
+              <div class="accordion-body bg-white p-4 custom-scrollbar" style="max-height: 500px; overflow-y: auto;">
+                <div class="accordion accordion-flush" id="noticeAccordion">
+                  <div class="text-center text-muted py-5">공지사항 데이터를 불러오는 중입니다...</div>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- FAQ (Middle) -->
-          <div class="col-lg-4 d-flex flex-column">
-            <h4 class="section-title mb-3"><i class="bi bi-info-circle-fill text-primary me-2"></i>자주 묻는 질문</h4>
-            <div class="card card-custom p-4 flex-grow-1 border-top border-primary border-4 shadow-sm custom-scrollbar" style="max-height: 600px; overflow-y: auto;">
-              <div class="accordion accordion-flush" id="faqAccordion">
-                <div class="text-center text-muted py-5">FAQ 데이터를 불러오는 중입니다...</div>
+          <!-- 2. 자주 묻는 질문 -->
+          <div class="accordion-item shadow-sm mb-4 border rounded-4 overflow-hidden">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed py-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFaqSec" aria-expanded="false">
+                <h4 class="fw-bold mb-0 text-dark"><i class="bi bi-info-circle-fill text-primary me-2"></i>자주 묻는 질문</h4>
+              </button>
+            </h2>
+            <div id="collapseFaqSec" class="accordion-collapse collapse" data-bs-parent="#noticeFaqQnaAccordion">
+              <div class="accordion-body bg-white p-4 custom-scrollbar" style="max-height: 500px; overflow-y: auto;">
+                <div class="accordion accordion-flush" id="faqAccordion">
+                  <div class="text-center text-muted py-5">FAQ 데이터를 불러오는 중입니다...</div>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- QnA 게시판 (Right) -->
-          <div class="col-lg-4 d-flex flex-column">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h4 class="section-title mb-0"><i class="bi bi-question-circle-fill text-info me-2"></i>개별 Q&A</h4>
-              <button data-bs-toggle="modal" data-bs-target="#qnaModal" class="btn btn-sm btn-info text-white fw-bold shadow-sm rounded-pill px-3"><i class="bi bi-pencil-square me-1"></i>질문 남기기</button>
-            </div>
-            <div class="card card-custom p-0 flex-grow-1 border-top border-info border-4 shadow-sm overflow-hidden custom-scrollbar" style="max-height: 600px; overflow-y: auto;">
-              <div class="table-responsive" id="qnaBoardContainer">
-                <div class="text-center text-muted py-5">Q&A 데이터를 불러오는 중입니다...</div>
+          <!-- 3. 개별 Q&A -->
+          <div class="accordion-item shadow-sm mb-4 border rounded-4 overflow-hidden">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed py-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapseQnaSec" aria-expanded="false">
+                <div class="d-flex w-100 justify-content-between align-items-center pe-3">
+                  <h4 class="fw-bold mb-0 text-dark"><i class="bi bi-question-circle-fill text-info me-2"></i>개별 Q&A</h4>
+                  <div data-bs-toggle="modal" data-bs-target="#qnaModal" class="btn btn-sm btn-info text-white fw-bold shadow-sm rounded-pill px-3" onclick="event.stopPropagation();"><i class="bi bi-pencil-square me-1"></i>질문 남기기</div>
+                </div>
+              </button>
+            </h2>
+            <div id="collapseQnaSec" class="accordion-collapse collapse" data-bs-parent="#noticeFaqQnaAccordion">
+              <div class="accordion-body bg-white p-0 custom-scrollbar" style="max-height: 500px; overflow-y: auto;">
+                <div class="table-responsive" id="qnaBoardContainer">
+                  <div class="text-center text-muted py-5">Q&A 데이터를 불러오는 중입니다...</div>
+                </div>
               </div>
             </div>
           </div>
+          
         </div>
 
             <!-- QnA Modal -->
