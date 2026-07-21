@@ -178,7 +178,10 @@
                       </div>
                       <!-- 서식 -->
                       <div class="col-lg-6">
-                        <h5 class="fw-bold text-success mb-3"><i class="bi bi-folder-fill me-2"></i>관련 서식 다운로드</h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                          <h5 class="fw-bold text-primary mb-0"><i class="bi bi-folder-fill me-2"></i>관련 서식 다운로드</h5>
+                          <div id="zip-btn-stage-1"></div>
+                        </div>
                         <div id="file-stage-1" class="file-stage-container h-100">
                           <div class="card bg-light border-0 shadow-sm p-4 h-100 text-center text-muted small d-flex justify-content-center align-items-center" style="border-radius:15px;">서식을 불러오는 중입니다...</div>
                         </div>
@@ -218,7 +221,10 @@
                       </div>
                       <!-- 서식 -->
                       <div class="col-lg-6">
-                        <h5 class="fw-bold text-success mb-3"><i class="bi bi-folder-fill me-2"></i>관련 서식 다운로드</h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                          <h5 class="fw-bold text-success mb-0"><i class="bi bi-folder-fill me-2"></i>관련 서식 다운로드</h5>
+                          <div id="zip-btn-stage-2"></div>
+                        </div>
                         <div id="file-stage-2" class="file-stage-container h-100">
                           <div class="card bg-light border-0 shadow-sm p-4 h-100 text-center text-muted small d-flex justify-content-center align-items-center" style="border-radius:15px;">서식을 불러오는 중입니다...</div>
                         </div>
@@ -264,7 +270,10 @@
                       </div>
                       <!-- 서식 -->
                       <div class="col-lg-6">
-                        <h5 class="fw-bold text-success mb-3"><i class="bi bi-folder-fill me-2"></i>관련 서식 다운로드</h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                          <h5 class="fw-bold text-info mb-0"><i class="bi bi-folder-fill me-2"></i>관련 서식 다운로드</h5>
+                          <div id="zip-btn-stage-3"></div>
+                        </div>
                         <div id="file-stage-3" class="file-stage-container h-100">
                           <div class="card bg-light border-0 shadow-sm p-4 h-100 text-center text-muted small d-flex justify-content-center align-items-center" style="border-radius:15px;">등록된 서식이 없습니다.</div>
                         </div>
@@ -661,25 +670,32 @@
       }
 
       const filesHTML = pkg.files.map(f => {
-        const badgeClass = BADGE_STYLES[f.badge] || 'bg-apply';
-        return `<a href="${f.path}" download class="btn btn-light border text-start fw-bold shadow-sm d-flex justify-content-between align-items-center mb-2">
-                  <span><span class="badge-step ${badgeClass} me-2">${f.badge}</span>${f.label}</span>
-                  <i class="bi bi-download text-muted"></i>
-                </a>`;
+        if (f.badge === '별첨') {
+          return `<div class="btn btn-light border text-start fw-bold shadow-sm d-flex justify-content-between align-items-center mb-2" style="cursor: default;">
+                    <span><span class="badge bg-secondary text-white p-2 me-2" style="border-radius:8px;">${f.badge}</span>${f.label}</span>
+                  </div>`;
+        } else {
+          const badgeClass = BADGE_STYLES[f.badge] || 'bg-apply';
+          return `<a href="${f.path}" download class="btn btn-light border text-start fw-bold shadow-sm d-flex justify-content-between align-items-center mb-2">
+                    <span><span class="badge-step ${badgeClass} me-2">${f.badge}</span>${f.label}</span>
+                    <i class="bi bi-download text-muted"></i>
+                  </a>`;
+        }
       }).join('');
 
       let colorClass = stage === 1 ? 'primary' : stage === 2 ? 'success' : 'info';
-      const zipHTML = pkg.zipFile
-        ? `<div class="mb-3 text-end"><a href="${pkg.zipFile}" download class="btn btn-${colorClass} btn-sm rounded-pill fw-bold text-white shadow-sm px-3"><i class="bi bi-archive me-1"></i>해당 단계 서식 전체 압축다운로드</a></div>`
-        : '';
+      
+      const zipContainer = document.getElementById(`zip-btn-stage-${stage}`);
+      if (zipContainer) {
+        zipContainer.innerHTML = pkg.zipFile 
+          ? `<a href="${pkg.zipFile}" download class="btn btn-outline-${colorClass} btn-sm rounded-pill fw-bold bg-white shadow-sm px-3 py-1" style="font-size: 0.8rem;"><i class="bi bi-archive me-1"></i>압축 다운로드</a>` 
+          : '';
+      }
 
       container.innerHTML = `
-        <div class="card border border-${colorClass} p-3 h-100 shadow-sm d-flex flex-column" style="border-radius:15px; border-width: 2px !important;">
-          ${zipHTML}
-          <div class="custom-scrollbar" style="flex-grow:1; max-height:250px; overflow-y:auto; padding-right:5px;">
-            <div class="d-flex flex-column">
-              ${filesHTML}
-            </div>
+        <div class="card border border-${colorClass} p-3 h-100 shadow-sm d-flex flex-column custom-scrollbar" style="border-radius:15px; border-width: 2px !important; max-height:250px; overflow-y:auto;">
+          <div class="d-flex flex-column">
+            ${filesHTML}
           </div>
         </div>
       `;
