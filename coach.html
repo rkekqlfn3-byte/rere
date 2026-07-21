@@ -56,6 +56,10 @@
     @media (max-width: 991.98px) {
       .custom-scrollbar { max-height: 60vh !important; }
     }
+    /* 데스크톱에서는 서식/매뉴얼 목록을 좁은 스크롤 박스에 가두지 않고 전체 표시 */
+    @media (min-width: 992px) {
+      .custom-scrollbar { max-height: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -63,7 +67,7 @@
 <div id="login-section" class="container login-wrapper">
   <div class="login-container text-center">
     <div class="mb-4"><i class="bi bi-shield-lock-fill text-primary" style="font-size: 3rem;"></i></div>
-    <h4 class="fw-bold text-primary mb-2">코치 통합 인증 센터</h4>
+    <h4 class="fw-bold text-primary mb-2">코치 전용 로그인</h4>
     <p class="small text-muted mb-4">성함(또는 관리자 ID)과 비밀번호를 입력하세요.</p>
     <div class="mb-3 text-start">
       <label class="form-label small fw-bold text-secondary">아이디 또는 성함</label>
@@ -448,16 +452,16 @@
     </div>
     
     <div id="admin-log-section" class="mt-5 pt-5 border-top">
-      <div class="card card-custom p-4 border border-danger" style="background-color: #fffafb;">
-        <h5 class="fw-bold text-danger mb-3"><i class="bi bi-terminal-split me-2"></i>보안 관제 레이더: 코치 실시간 로그인 이력 관리</h5>
-        <p class="small text-muted mb-3">본 모듈은 브라우저 가상 스토리지 전역에 누적 기록된 실시간 접속 데이터를 시각화합니다. (admin 계정만 가독 가능)</p>
+      <div class="card card-custom p-4 border">
+        <h5 class="fw-bold mb-3"><i class="bi bi-clock-history me-2 text-secondary"></i>코치 접속 이력</h5>
+        <p class="small text-muted mb-3">코치별 로그인 기록입니다. (관리자만 열람 가능)</p>
         <div class="table-responsive">
           <table class="table table-hover bg-white align-middle small shadow-sm rounded-3 overflow-hidden">
             <thead class="table-dark">
               <tr>
                 <th scope="col" style="width: 10%">순번</th>
                 <th scope="col" style="width: 30%">코치 성명 / ID</th>
-                <th scope="col" style="width: 40%">인증 성공 일시 (Timestamp)</th>
+                <th scope="col" style="width: 40%">접속 일시</th>
                 <th scope="col" style="width: 20%">상태</th>
               </tr>
             </thead>
@@ -1039,7 +1043,7 @@ async function checkSecureLogin() {
     }, 300);
     
     if (username === "관리자" || username === "admin") {
-      document.getElementById('userGreeting').innerHTML = `<i class="bi bi-shield-fill-check text-danger"></i> 최고관리자 시스템 접속 중`;
+      document.getElementById('userGreeting').innerHTML = `<i class="bi bi-shield-fill-check text-primary"></i> 관리자 접속 중`;
       document.getElementById('admin-log-section').style.display = 'block';
       loadAccessLogsToTable();
     } else {
