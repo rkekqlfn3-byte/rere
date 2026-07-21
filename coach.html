@@ -113,8 +113,8 @@
               <h4 class="section-title mb-0"><i class="bi bi-question-circle-fill text-info me-2"></i>자주 묻는 질문 (Q&A)</h4>
               <button data-bs-toggle="modal" data-bs-target="#qnaModal" class="btn btn-info text-white fw-bold shadow-sm rounded-pill px-4"><i class="bi bi-pencil-square me-2"></i>개별 질문 남기기</button>
             </div>
-            <div class="card card-custom p-4 mb-4 border-top border-info border-4 shadow-sm">
-              <div class="accordion accordion-flush" id="qnaAccordion">
+            <div class="card card-custom p-0 mb-4 border-top border-info border-4 shadow-sm overflow-hidden">
+              <div class="table-responsive" id="qnaBoardContainer">
                 <div class="text-center text-muted py-5">Q&A 데이터를 불러오는 중입니다...</div>
               </div>
             </div>
@@ -459,9 +459,28 @@
         if(idx === 0) return; // 무조건 첫 번째 줄(헤더) 무시
         if(!row || !row.c || !row.c[0] || !row.c[0].v) return;
         const question = row.c[0].v;
-        
         const answer = row.c[1] && row.c[1].v ? row.c[1].v : '';
-        QNA_LIST.push({ question, answer });
+        const author = row.c[2] && row.c[2].v ? row.c[2].v : '익명';
+        let dateStr = '';
+        if (row.c[3] && row.c[3].f) {
+           dateStr = row.c[3].f;
+        } else if (row.c[3] && row.c[3].v) {
+           dateStr = String(row.c[3].v);
+           if(dateStr.startsWith('Date(')) {
+               const parts = dateStr.match(/Date\((\d+),(\d+),(\d+)\)/);
+               if(parts) {
+                   const y = parts[1];
+                   const m = String(parseInt(parts[2]) + 1).padStart(2, '0');
+                   const d = String(parts[3]).padStart(2, '0');
+                   dateStr = `${y}.${m}.${d}`;
+               }
+           }
+        }
+        if (!dateStr || dateStr.trim() === '') dateStr = '-';
+        // 뒤에 붙는 시분초 제거 (YYYY.MM.DD 형식 유지)
+        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
+
+        QNA_LIST.push({ question, answer, author, date: dateStr });
       });
       renderQna();
     } catch(e) {
@@ -470,40 +489,73 @@
     }
   };
 
-  // QnA 아코디언 렌더링
+  // QnA 아코디언(게시판) 렌더링
   function renderQna() {
-    const container = document.getElementById('qnaAccordion');
+    const container = document.getElementById('qnaBoardContainer');
     if (!container) return;
     
     if (QNA_LIST.length === 0) {
-      container.innerHTML = '<div class="text-center text-muted py-4">등록된 Q&A가 없습니다.</div>';
+      container.innerHTML = '<div class="text-center text-muted py-5">등록된 Q&A가 없습니다.</div>';
       return;
     }
     
-    container.innerHTML = '';
-    QNA_LIST.forEach((qna, idx) => {
-      const accordionId = `qnaItem${idx}`;
+    // 테이블 헤더
+    let tableHTML = `
+      <table class="table table-hover align-middle mb-0" style="font-size: 0.95rem;">
+        <thead class="table-light">
+          <tr>
+            <th class="text-center" style="width: 10%;">상태</th>
+            <th style="width: 60%;">질문 내용</th>
+            <th class="text-center" style="width: 15%;">작성자</th>
+            <th class="text-center" style="width: 15%;">작성일</th>
+          </tr>
+        </thead>
+        <tbody id="qnaTableBody">
+    `;
+
+    // 최신 질문이 위로 오도록 역순으로 렌더링 (또는 시트 순서 유지)
+    // 시트에서 위에서부터 아래로 쌓이므로 배열을 뒤집습니다.
+    const reversedQna = [...QNA_LIST].reverse();
+
+    reversedQna.forEach((qna, idx) => {
+      const isAnswered = qna.answer && qna.answer.trim().length > 0;
+      const statusBadge = isAnswered 
+        ? `<span class="badge bg-primary rounded-pill px-3">답변 완료</span>` 
+        : `<span class="badge bg-secondary rounded-pill px-3">답변 대기</span>`;
       
-      const itemHTML = `
-        <div class="accordion-item shadow-sm mb-2" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
-          <h2 class="accordion-header">
-            <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#${accordionId}">
-              <div class="d-flex w-100 justify-content-between align-items-center pe-3">
-                <div class="text-truncate pe-2">
-                  <span class="badge bg-info text-dark me-2">Q</span>
-                  <span class="fw-bold text-dark" style="font-size: 1.05rem;">${qna.question}</span>
+      const rowId = `qnaCollapse${idx}`;
+
+      tableHTML += `
+        <tr style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#${rowId}" aria-expanded="false" aria-controls="${rowId}">
+          <td class="text-center">${statusBadge}</td>
+          <td class="fw-bold text-dark text-truncate" style="max-width: 300px;">${qna.question}</td>
+          <td class="text-center text-muted small">${qna.author}</td>
+          <td class="text-center text-muted small">${qna.date}</td>
+        </tr>
+        <tr>
+          <td colspan="4" class="p-0 border-0">
+            <div class="collapse" id="${rowId}" data-bs-parent="#qnaTableBody">
+              <div class="p-4 bg-light text-dark" style="border-bottom: 1px solid #dee2e6; white-space: pre-line; line-height: 1.6;">
+                <div class="mb-3">
+                  <span class="badge bg-info text-dark me-2">Q</span> <span class="fw-bold">${qna.question}</span>
+                </div>
+                <div>
+                  <span class="badge bg-secondary me-2">A</span> 
+                  ${isAnswered ? qna.answer : '<span class="text-muted">아직 답변이 등록되지 않았습니다. 조금만 기다려주세요!</span>'}
                 </div>
               </div>
-            </button>
-          </h2>
-          <div id="${accordionId}" class="accordion-collapse collapse" data-bs-parent="#qnaAccordion">
-            <div class="accordion-body bg-light" style="white-space: pre-line; line-height: 1.6; font-size: 0.95rem; border-top: 1px dashed #ced4da;">
-              <span class="badge bg-secondary me-2">A</span>${qna.answer}
             </div>
-          </div>
-        </div>`;
-      container.innerHTML += itemHTML;
+          </td>
+        </tr>
+      `;
     });
+
+    tableHTML += `
+        </tbody>
+      </table>
+    `;
+    
+    container.innerHTML = tableHTML;
   }
 
   // 구글 시트(공개)에서 공지사항 리스트 불러오기
