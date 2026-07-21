@@ -743,9 +743,11 @@
                 <div class="pe-2" style="word-break: keep-all;">
                   ${badgeHTML}<span class="fw-bold text-dark" style="font-size: 0.85rem; line-height: 1.4;">${notice.title}</span>
                 </div>
+                ${notice.date ? `
                 <div class="text-muted small flex-shrink-0" style="white-space: nowrap;">
                   <i class="bi bi-calendar-event me-1"></i>${notice.date}
                 </div>
+                ` : ''}
               </div>
             </button>
           </h2>
