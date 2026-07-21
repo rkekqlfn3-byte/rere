@@ -483,7 +483,7 @@
         if(!row || !row.c || !row.c[0] || !row.c[0].v) return;
         const question = row.c[0].v;
         const answer = row.c[1] && row.c[1].v ? row.c[1].v : '';
-        const author = row.c[2] && row.c[2].v ? row.c[2].v : '익명';
+        const author = '익명';
         let dateStr = '';
         if (row.c[3] && row.c[3].f) {
            dateStr = row.c[3].f;
@@ -500,8 +500,11 @@
            }
         }
         if (!dateStr || dateStr.trim() === '') dateStr = '-';
-        // 뒤에 붙는 시분초 제거 (YYYY.MM.DD 형식 유지)
-        if (dateStr.includes(' ')) dateStr = dateStr.split(' ')[0];
+        
+        // 시간 부분 제거하고 날짜만 남기기 (오전/오후 분기 처리)
+        if (dateStr.includes('오전')) dateStr = dateStr.split('오전')[0].trim();
+        else if (dateStr.includes('오후')) dateStr = dateStr.split('오후')[0].trim();
+        else if (dateStr.match(/\d{2}:\d{2}/)) dateStr = dateStr.split(' ')[0];
 
         QNA_LIST.push({ question, answer, author, date: dateStr });
       });
@@ -718,10 +721,10 @@
           <h2 class="accordion-header">
             <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#${accordionId}">
               <div class="d-flex w-100 justify-content-between align-items-center pe-3">
-                <div class="text-truncate pe-2">
-                  ${badgeHTML}<span class="fw-bold text-dark" style="font-size: 1.05rem;">${notice.title}</span>
+                <div class="pe-2" style="word-break: keep-all;">
+                  ${badgeHTML}<span class="fw-bold text-dark" style="font-size: 0.85rem; line-height: 1.4;">${notice.title}</span>
                 </div>
-                <div class="text-muted small" style="white-space: nowrap;">
+                <div class="text-muted small flex-shrink-0" style="white-space: nowrap;">
                   <i class="bi bi-calendar-event me-1"></i>${notice.date}
                 </div>
               </div>
