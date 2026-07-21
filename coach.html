@@ -84,7 +84,8 @@
   <div class="bg-white border-bottom sticky-top" style="z-index: 1020; top: 0;">
     <div class="container">
       <ul class="nav nav-tabs nav-tabs-global border-0" id="globalMenuTab" role="tablist">
-        <li class="nav-item"><button class="nav-link active" id="menu-guide-tab" data-bs-toggle="tab" data-bs-target="#menu-guide" type="button" role="tab"><i class="bi bi-briefcase-fill me-2"></i>1. 컨설팅 업무 가이드관</button></li>
+        <li class="nav-item"><button class="nav-link active" id="menu-notice-tab" data-bs-toggle="tab" data-bs-target="#menu-notice" type="button" role="tab"><i class="bi bi-megaphone-fill me-2"></i>0. 공지사항 및 Q&A</button></li>
+        <li class="nav-item"><button class="nav-link" id="menu-guide-tab" data-bs-toggle="tab" data-bs-target="#menu-guide" type="button" role="tab"><i class="bi bi-briefcase-fill me-2"></i>1. 컨설팅 업무 가이드관</button></li>
         <li class="nav-item"><button class="nav-link" id="menu-spec-tab" data-bs-toggle="tab" data-bs-target="#menu-spec" type="button" role="tab"><i class="bi bi-cpu-fill me-2"></i>2. AI 훈련 표준모델 안내관</button></li>
       </ul>
     </div>
@@ -93,11 +94,12 @@
   <div class="container py-5">
     <div class="tab-content" id="globalMenuTabContent">
       
-      <div class="tab-pane fade show active" id="menu-guide" role="tabpanel">
+      <div class="tab-pane fade show active" id="menu-notice" role="tabpanel">
         <div class="text-center mb-5">
-          <h2 class="fw-bold text-primary mb-2">코치 전용 업무 절차 및 자료실</h2>
-          <p class="text-muted">컨설팅 표준 7단계 프로세스 및 필수 행정 서식을 일괄 제공합니다.</p>
+          <h2 class="fw-bold text-danger mb-2">공지사항 및 자주 묻는 질문</h2>
+          <p class="text-muted">주요 변경사항을 확인하고 코칭 관련 궁금증을 해결하세요.</p>
         </div>
+        
         <div class="d-flex flex-column gap-4">
           <div id="notice-section">
             <h4 class="section-title mb-4"><i class="bi bi-megaphone-fill text-danger me-2"></i>공지사항</h4>
@@ -107,16 +109,25 @@
               </div>
             </div>
 
-            <h4 class="section-title mb-4"><i class="bi bi-question-circle-fill text-info me-2"></i>자주 묻는 질문 (Q&A)</h4>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h4 class="section-title mb-0"><i class="bi bi-question-circle-fill text-info me-2"></i>자주 묻는 질문 (Q&A)</h4>
+              <a href="https://forms.google.com/" target="_blank" class="btn btn-info text-white fw-bold shadow-sm rounded-pill px-4"><i class="bi bi-pencil-square me-2"></i>개별 질문 남기기</a>
+            </div>
             <div class="card card-custom p-4 mb-4 border-top border-info border-4 shadow-sm">
               <div class="accordion accordion-flush" id="qnaAccordion">
                 <div class="text-center text-muted py-5">Q&A 데이터를 불러오는 중입니다...</div>
               </div>
             </div>
           </div>
-          
-          <hr class="text-muted opacity-25 my-4">
+        </div>
+      </div>
 
+      <div class="tab-pane fade" id="menu-guide" role="tabpanel">
+        <div class="text-center mb-5">
+          <h2 class="fw-bold text-primary mb-2">코치 전용 업무 절차 및 자료실</h2>
+          <p class="text-muted">컨설팅 표준 3단계 프로세스 및 필수 행정 서식을 일괄 제공합니다.</p>
+        </div>
+        <div class="d-flex flex-column gap-4">
           <div id="procedure-section">
             <h4 class="section-title mb-4"><i class="bi bi-diagram-3-fill text-primary me-2"></i>코칭 3단계 프로세스 통합 안내</h4>
             <div class="accordion accordion-flush" id="threeStepAccordion">
