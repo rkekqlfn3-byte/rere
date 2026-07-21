@@ -111,11 +111,28 @@
 
             <div class="d-flex justify-content-between align-items-center mb-4">
               <h4 class="section-title mb-0"><i class="bi bi-question-circle-fill text-info me-2"></i>자주 묻는 질문 (Q&A)</h4>
-              <a href="https://forms.google.com/" target="_blank" class="btn btn-info text-white fw-bold shadow-sm rounded-pill px-4"><i class="bi bi-pencil-square me-2"></i>개별 질문 남기기</a>
+              <button data-bs-toggle="modal" data-bs-target="#qnaModal" class="btn btn-info text-white fw-bold shadow-sm rounded-pill px-4"><i class="bi bi-pencil-square me-2"></i>개별 질문 남기기</button>
             </div>
             <div class="card card-custom p-4 mb-4 border-top border-info border-4 shadow-sm">
               <div class="accordion accordion-flush" id="qnaAccordion">
                 <div class="text-center text-muted py-5">Q&A 데이터를 불러오는 중입니다...</div>
+              </div>
+            </div>
+
+            <!-- QnA Modal -->
+            <div class="modal fade" id="qnaModal" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow" style="border-radius:15px;">
+                  <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-bold text-dark"><i class="bi bi-pencil-square text-info me-2"></i>질문 작성하기</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body pt-3">
+                    <p class="text-muted small mb-3">궁금한 점을 남겨주시면, 확인 후 신속하게 구글 시트 Q&A 목록에 답변을 등록해 드립니다.</p>
+                    <textarea id="qnaQuestionText" class="form-control mb-3" rows="4" placeholder="질문 내용을 입력해주세요." style="border-radius:10px;"></textarea>
+                    <button id="qnaSubmitBtn" onclick="submitQna()" class="btn btn-info w-100 text-white fw-bold rounded-pill shadow-sm">질문 등록하기</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -645,19 +662,56 @@
 
       const filesHTML = pkg.files.map(f => {
         const badgeClass = BADGE_STYLES[f.badge] || 'bg-apply';
-        return `<div class="d-flex justify-content-between align-items-center bg-white p-3 mb-2 rounded border shadow-sm">`
-          + `<div><span class="badge-step ${badgeClass} me-2">${f.badge}</span><span class="small fw-bold text-dark">${f.label}</span></div>`
-          + `<a href="${f.path}" download class="text-primary text-decoration-none fw-bold" style="background:#e9f2ff; padding:5px 12px; border-radius:8px;"><i class="bi bi-download"></i></a>`
-          + `</div>`;
+        return `<a href="${f.path}" download class="btn btn-light border text-start fw-bold shadow-sm d-flex justify-content-between align-items-center mb-2">
+                  <span><span class="badge-step ${badgeClass} me-2">${f.badge}</span>${f.label}</span>
+                  <i class="bi bi-download text-muted"></i>
+                </a>`;
       }).join('');
 
-      let zipColor = stage === 1 ? 'primary' : stage === 2 ? 'success' : 'info';
+      let colorClass = stage === 1 ? 'primary' : stage === 2 ? 'success' : 'info';
       const zipHTML = pkg.zipFile
-        ? `<div class="mb-3 text-end"><a href="${pkg.zipFile}" download class="btn btn-${zipColor} btn-sm rounded-pill fw-bold text-white shadow-sm px-3"><i class="bi bi-archive me-1"></i>서식 전체 압축다운로드</a></div>`
+        ? `<div class="mb-3 text-end"><a href="${pkg.zipFile}" download class="btn btn-${colorClass} btn-sm rounded-pill fw-bold text-white shadow-sm px-3"><i class="bi bi-archive me-1"></i>해당 단계 서식 전체 압축다운로드</a></div>`
         : '';
 
-      container.innerHTML = zipHTML + `<div style="max-height:350px; overflow-y:auto; padding-right:5px;">` + filesHTML + `</div>`;
+      container.innerHTML = `
+        <div class="card border border-${colorClass} p-3 h-100 shadow-sm d-flex flex-column" style="border-radius:15px; border-width: 2px !important;">
+          ${zipHTML}
+          <div class="custom-scrollbar" style="flex-grow:1; max-height:250px; overflow-y:auto; padding-right:5px;">
+            <div class="d-flex flex-column">
+              ${filesHTML}
+            </div>
+          </div>
+        </div>
+      `;
     });
+  }
+
+  // Q&A 등록 로직
+  async function submitQna() {
+    const text = document.getElementById('qnaQuestionText').value.trim();
+    if(!text) { alert('질문 내용을 입력해주세요.'); return; }
+    const username = localStorage.getItem('coach_logged_in_user') || '익명 코치';
+    
+    const btn = document.getElementById('qnaSubmitBtn');
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>등록 중...';
+    btn.disabled = true;
+
+    try {
+      await fetch(WEB_APP_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'addQna', user: username, question: text, time: new Date().toLocaleString('ko-KR') })
+      });
+      alert('질문이 성공적으로 등록되었습니다!\\n(확인 후 구글 시트 Q&A 목록에 답변이 업데이트됩니다.)');
+      document.getElementById('qnaQuestionText').value = '';
+      bootstrap.Modal.getInstance(document.getElementById('qnaModal')).hide();
+    } catch(e) {
+      alert('등록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+    } finally {
+      btn.innerHTML = '질문 등록하기';
+      btn.disabled = false;
+    }
   }
 
   // 2. 로그인 처리 (SHA-256 대신 구글 시트 통신)
