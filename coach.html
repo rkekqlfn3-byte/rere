@@ -810,28 +810,59 @@
         return;
       }
 
-      // '별첨'이 포함된 뱃지를 가진 파일이 위로 오도록 정렬
-      const sortedFiles = pkg.files.sort((a, b) => {
-        const aIsAttachment = a.badge.includes('별첨');
-        const bIsAttachment = b.badge.includes('별첨');
-        if (aIsAttachment && !bIsAttachment) return -1;
-        if (!aIsAttachment && bIsAttachment) return 1;
-        return 0;
+      // 단계별 그룹화
+      const groups = {
+        '별첨': [],
+        '신청': [],
+        '진행': [],
+        '수당': []
+      };
+      
+      // 기타(예상치 못한 뱃지)를 담을 배열
+      const others = [];
+
+      pkg.files.forEach(f => {
+        let matched = false;
+        for (const key of Object.keys(groups)) {
+          if (f.badge.includes(key)) {
+            groups[key].push(f);
+            matched = true;
+            break;
+          }
+        }
+        if (!matched) others.push(f);
       });
 
-      const filesHTML = sortedFiles.map(f => {
-        if (f.badge.includes('별첨')) {
-          return `<div class="btn btn-light border text-start fw-bold shadow-sm d-flex justify-content-between align-items-center mb-2" style="cursor: default;">
-                    <span><span class="badge bg-secondary text-white p-2 me-2" style="border-radius:8px;">${f.badge}</span>${f.label}</span>
-                  </div>`;
-        } else {
-          const badgeClass = BADGE_STYLES[f.badge] || 'bg-apply';
-          return `<a href="${f.path}" download class="btn btn-light border text-start fw-bold shadow-sm d-flex justify-content-between align-items-center mb-2">
-                    <span><span class="badge-step ${badgeClass} me-2">${f.badge}</span>${f.label}</span>
-                    <i class="bi bi-download text-muted"></i>
-                  </a>`;
-        }
-      }).join('');
+      let filesHTML = '';
+      
+      // 렌더링 함수
+      const renderGroup = (title, items) => {
+        if (items.length === 0) return '';
+        let html = `<div class="mb-3">
+                      <div class="fw-bold text-muted small mb-2"><i class="bi bi-bookmark-check-fill me-1"></i>[${title}] 관련 서식</div>`;
+        html += items.map(f => {
+          if (f.badge.includes('별첨')) {
+            return `<div class="btn btn-light border text-start fw-bold shadow-sm d-flex justify-content-between align-items-center mb-2" style="cursor: default; font-size: 0.85rem;">
+                      <span><i class="bi bi-paperclip text-secondary me-2"></i>${f.label}</span>
+                    </div>`;
+          } else {
+            const badgeClass = BADGE_STYLES[f.badge] || 'bg-apply';
+            return `<a href="${f.path}" download class="btn btn-light border text-start fw-bold shadow-sm d-flex justify-content-between align-items-center mb-2" style="font-size: 0.85rem;">
+                      <span><span class="badge-step ${badgeClass} me-2">${f.badge}</span>${f.label}</span>
+                      <i class="bi bi-download text-muted"></i>
+                    </a>`;
+          }
+        }).join('');
+        html += `</div>`;
+        return html;
+      };
+
+      // 순서대로 렌더링
+      filesHTML += renderGroup('별첨', groups['별첨']);
+      filesHTML += renderGroup('신청', groups['신청']);
+      filesHTML += renderGroup('진행', groups['진행']);
+      filesHTML += renderGroup('수당', groups['수당']);
+      if (others.length > 0) filesHTML += renderGroup('기타', others);
 
       let colorClass = stage === 1 ? 'primary' : stage === 2 ? 'success' : 'info';
       
