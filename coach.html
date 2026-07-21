@@ -105,11 +105,11 @@
           <!-- 1. 공지사항 -->
           <div class="accordion-item shadow-sm mb-4 border rounded-4 overflow-hidden">
             <h2 class="accordion-header">
-              <button class="accordion-button py-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNoticeSec" aria-expanded="true">
+              <button class="accordion-button collapsed py-4" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNoticeSec" aria-expanded="false">
                 <h4 class="fw-bold mb-0 text-dark"><i class="bi bi-megaphone-fill text-danger me-2"></i>공지사항</h4>
               </button>
             </h2>
-            <div id="collapseNoticeSec" class="accordion-collapse collapse show" data-bs-parent="#noticeFaqQnaAccordion">
+            <div id="collapseNoticeSec" class="accordion-collapse collapse" data-bs-parent="#noticeFaqQnaAccordion">
               <div class="accordion-body bg-white p-4 custom-scrollbar" style="max-height: 500px; overflow-y: auto;">
                 <div class="accordion accordion-flush" id="noticeAccordion">
                   <div class="text-center text-muted py-5">공지사항 데이터를 불러오는 중입니다...</div>
@@ -869,7 +869,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'addQna', user: username, question: text, time: new Date().toLocaleString('ko-KR') })
       });
-      alert('질문이 성공적으로 등록되었습니다!\\n(확인 후 구글 시트 Q&A 목록에 답변이 업데이트됩니다.)');
+      alert('질문을 남겼습니다.');
       
       const todayStr = new Date().toLocaleDateString('ko-KR').replace(/\s/g, '');
       QNA_LIST.push({ question: text, answer: '', author: '익명', date: todayStr });
