@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI표준모델 - 공정 품질관리 시스템</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body { background-color: #121217; color: #e4e4e7; font-family: 'Malgun Gothic', sans-serif; padding-bottom: 50px; }
+        .glass-card { background: rgba(30, 30, 40, 0.65); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
+        .status-box { border-left: 5px solid #3b82f6; }
+        .status-box.danger { border-left: 5px solid #ef4444; background: rgba(239, 68, 68, 0.1); }
+        .table { color: #e4e4e7; }
+        .table th { background-color: rgba(50, 50, 65, 0.8) !important; color: #ffffff !important; }
+        .table td { background-color: transparent !important; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+        .form-control, .form-select { background-color: rgba(50, 50, 65, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; }
+        .form-control:focus, .form-select:focus { background-color: rgba(50, 50, 65, 0.8); color: #ffffff; border-color: #3b82f6; box-shadow: none; }
+        .btn-primary { background-color: #3b82f6; border: none; transition: all 0.3s ease; }
+        .btn-primary:hover { background-color: #2563eb; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+<div class="container mt-4" id="pdf-area">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3 border-secondary">
+        <div>
+            <span class="badge bg-danger mb-2">경남경총 중소기업AI훈련확산센터</span>
+            <h1 class="h2 fw-bold text-white">공정 불량률 분석 및 품질 대시보드</h1>
+        </div>
+        <div class="no-print d-flex gap-2">
+            <button class="btn btn-outline-light fw-bold" onclick="downloadTemplate()">📂 품질공정 시트양식 다운로드</button>
+            <button class="btn btn-outline-danger fw-bold" onclick="downloadPDF()">📋 품질 분석 리포트 다운로드</button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4"><div class="glass-card status-box" style="border-left-color: #a855f7;"><h6 class="text-muted text-uppercase">총 검사 수량</h6><h2 class="fw-bold m-0" id="txt-total-inspect">0개</h2></div></div>
+        <div class="col-md-4"><div class="glass-card status-box" style="border-left-color: #10b981;"><h6 class="text-muted text-uppercase">총 합격 수량</h6><h2 class="fw-bold m-0" id="txt-total-pass">0개</h2></div></div>
+        <div class="col-md-4"><div id="box-rate" class="glass-card status-box"><h6 class="text-muted text-uppercase">종합 공정 불량률</h6><h2 class="fw-bold m-0" id="txt-defect-rate">0.0%</h2></div></div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 no-print">
+            <div class="glass-card">
+                <h5 class="fw-bold mb-3 text-danger">품질 검사 결과 입력</h5>
+                <form id="quality-form" onsubmit="addLog(event)">
+                    <div class="mb-3"><label class="form-label">품명</label><input type="text" id="itemName" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">검사 수량</label><input type="number" id="inspectQty" class="form-control" min="1" required></div>
+                    <div class="mb-3"><label class="form-label">불량 수량</label><input type="number" id="defectQty" class="form-control" min="0" required></div>
+                    <div class="mb-3"><label class="form-label">주요 불량 유형</label><select id="defectType" class="form-select" required><option value="치수불량">치수 오차 (Spec 미달)</option><option value="스크래치">표면 스크래치/크랙</option><option value="도장불량">도장/도금 불량</option></select></div>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold">검사 데이터 반영</button>
+                </form>
+            </div>
+
+            <div class="glass-card mt-3">
+                <h5 class="fw-bold mb-3 text-warning">📁 품질 성적서 부서 저장소</h5>
+                <div class="mb-3"><input type="file" id="file-input" class="form-control form-control-sm" onchange="uploadFile()"></div>
+                <ul class="list-group list-group-flush bg-transparent" id="file-list" style="max-height: 120px; overflow-y: auto; font-size: 14px;"></ul>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="glass-card" style="height: 565px;">
+                <h5 class="fw-bold mb-3 text-danger">불량 유형별 발생 건수 (파레토 대시보드)</h5>
+                <div style="position: relative; height:460px; width:100%"><canvas id="qualityChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-md-12">
+            <div class="glass-card">
+                <h5 class="fw-bold mb-3 text-white">생산 로트별 품질 검사 기록</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead><tr><th>일시</th><th>품명</th><th>검사수량</th><th>불량수량</th><th>불량률</th><th>유형</th><th>판정</th></tr></thead>
+                        <tbody id="data-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const defaultData = [{ date: "2026-06-12", name: "실린더 헤드", inspect: 100, defect: 2, type: "치수불량" }];
+    let storageLogs = JSON.parse(localStorage.getItem("quality_model_logs")) || defaultData;
+    let uploadedFiles = JSON.parse(localStorage.getItem("quality_files")) || [];
+    let myChart = null;
+
+    function updateDashboard() {
+        const tableBody = document.getElementById("data-table-body");
+        tableBody.innerHTML = "";
+        let totalInspect = 0, totalDefect = 0;
+        let chartData = { "치수불량": 0, "스크래치": 0, "도장불량": 0 };
+
+        storageLogs.slice().reverse().forEach(log => {
+            totalInspect += log.inspect; totalDefect += log.defect;
+            if(chartData[log.type] !== undefined) chartData[log.type] += log.defect;
+
+            const rate = ((log.defect / log.inspect) * 100).toFixed(1);
+            const isDanger = rate >= 5.0;
+            const tr = document.createElement("tr");
+            if(isDanger) tr.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
+            tr.innerHTML = `<td>${log.date}</td><td class="fw-bold">${log.name}</td><td>${log.inspect}</td><td>${log.defect}</td><td class="${isDanger ? 'text-danger fw-bold' : ''}">${rate}%</td><td>${log.type}</td><td><span class="badge ${isDanger ? 'bg-danger' : 'bg-success'}">${isDanger ? '재검사' : '합격'}</span></td>`;
+            tableBody.appendChild(tr);
+        });
+
+        const grandRate = totalInspect > 0 ? ((totalDefect / totalInspect) * 100).toFixed(1) : "0.0";
+        document.getElementById("txt-total-inspect").innerText = totalInspect + " 개";
+        document.getElementById("txt-total-pass").innerText = (totalInspect - totalDefect) + " 개";
+        document.getElementById("txt-defect-rate").innerText = grandRate + "%";
+
+        const rateBox = document.getElementById("box-rate");
+        if(grandRate >= 5.0) { rateBox.className = "glass-card status-box danger"; document.getElementById("txt-defect-rate").className = "fw-bold m-0 text-danger"; } 
+        else { rateBox.className = "glass-card status-box"; document.getElementById("txt-defect-rate").className = "fw-bold m-0 text-success"; }
+
+        updateChart(chartData);
+        renderFileList();
+    }
+
+    function updateChart(chartData) {
+        const ctx = document.getElementById('qualityChart').getContext('2d');
+        if (myChart) myChart.destroy();
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(chartData),
+                datasets: [{ label: '불량 현황 (개)', data: Object.values(chartData), backgroundColor: ['rgba(255, 99, 132, 0.6)', 'rgba(255, 159, 64, 0.6)', 'rgba(255, 205, 86, 0.6)'] }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: '#e4e4e7' } }, x: { ticks: { color: '#e4e4e7' } } } }
+        });
+    }
+
+    function addLog(e) {
+        e.preventDefault();
+        const ins = parseInt(document.getElementById("inspectQty").value);
+        const def = parseInt(document.getElementById("defectQty").value);
+        if(def > ins) { alert("불량수량 오류!"); return; }
+
+        storageLogs.push({ date: new Date().toISOString().split('T')[0], name: document.getElementById("itemName").value, inspect: ins, defect: def, type: document.getElementById("defectType").value });
+        localStorage.setItem("quality_model_logs", JSON.stringify(storageLogs));
+        updateDashboard();
+        document.getElementById("quality-form").reset();
+    }
+
+    function uploadFile() {
+        const fileInput = document.getElementById('file-input');
+        const file = fileInput.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            uploadedFiles.push({ name: file.name, data: e.target.result });
+            localStorage.setItem("quality_files", JSON.stringify(uploadedFiles));
+            renderFileList(); fileInput.value = "";
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function renderFileList() {
+        const fileListHTML = document.getElementById('file-list');
+        fileListHTML.innerHTML = uploadedFiles.length === 0 ? '<li class="text-muted text-center" style="list-style:none;">첨부 성적서 없음</li>' : '';
+        uploadedFiles.forEach((file, index) => {
+            const li = document.createElement('li');
+            li.className = "list-group-item bg-transparent border-secondary text-white d-flex justify-content-between align-items-center p-1";
+            li.innerHTML = `<a href="${file.data}" download="${file.name}" class="text-warning text-decoration-none text-truncate" style="max-width:180px;">📄 ${file.name}</a><button class="btn btn-sm text-danger p-0 border-0" onclick="deleteFile(${index})">❌</button>`;
+            fileListHTML.appendChild(li);
+        });
+    }
+
+    function deleteFile(index) { uploadedFiles.splice(index, 1); localStorage.setItem("quality_files", JSON.stringify(uploadedFiles)); renderFileList(); }
+
+    function downloadTemplate() {
+        const textContent = "============= [품질관리팀 공정 표준 표준 점검표] =============\n\n품명: \n검사원: \n\n[주요 체크리스트 항목]\n- 설비 정밀 공차 상태 범위 검토\n- 표면 상태 균열 및 도금 박리 상태 전수 조사\n\n* 발견된 특이 결함 사유는 하단 품질 마스터 테이블에 즉각 기록 요망.";
+        const blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
+        const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "공정_품질관리_점검양식.txt"; link.click();
+    }
+
+    function downloadPDF() {
+        const element = document.getElementById('pdf-area');
+        const style = document.createElement('style'); style.id = "pdf-print-style"; style.innerHTML = '.no-print { display: none !important; } body { background-color: #ffffff; color: #000000; } .glass-card { background: #f8f9fa; border: 1px solid #dee2e6; box-shadow: none; }';
+        document.head.appendChild(style);
+        html2pdf().from(element).set({ margin: 10, filename: '품질분석_보고서.pdf', html2canvas: { scale: 2, backgroundColor: '#ffffff' }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } }).save().then(() => { document.getElementById("pdf-print-style").remove(); });
+    }
+
+    window.onload = updateDashboard;
+</script>
+</body>
+</html>
