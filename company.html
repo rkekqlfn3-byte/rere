@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>기업전용관 | 중소기업 AI훈련 확산센터</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <meta name="description" content="참여기업 전용관 - 사업 참여 신청 절차 안내와 기업용 서식 자료를 제공합니다.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="기업전용관 | 중소기업 AI훈련 확산센터">
+  <meta property="og:description" content="사업 참여 신청 절차 안내와 기업용 서식 자료를 제공합니다.">
+  <meta property="og:image" content="favicon.svg">
+  <meta name="twitter:card" content="summary">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
@@ -135,10 +142,10 @@
         const rows = data.table.rows;
         rows.forEach((row, idx) => {
           if (idx === 0) return; // 헤더 무시
-          if (!row || !row.c || !row.c[1] || !row.c[2]) return; // B:표시명, C:경로
-          
-          const displayName = row.c[1].v ? String(row.c[1].v).trim() : '';
-          const filePath = row.c[2].v ? String(row.c[2].v).trim() : '';
+          if (!row || !row.c || !row.c[0] || !row.c[1]) return; // A:표시명, B:경로
+
+          const displayName = row.c[0].v ? String(row.c[0].v).trim() : '';
+          const filePath = row.c[1].v ? String(row.c[1].v).trim() : '';
           
           if (!displayName || !filePath) return;
 
@@ -158,11 +165,28 @@
         console.error("서식 연동 실패:", e);
         document.getElementById('company-file-container').innerHTML = '<div class="text-center text-danger small py-3">서식을 불러오지 못했습니다.</div>';
       }
+      if (loadTimer) clearTimeout(loadTimer);
       delete window[cb];
     };
 
+    const container = document.getElementById('company-file-container');
+    if (container) {
+      container.innerHTML = '<div class="text-center text-muted small py-3"><span class="spinner-border spinner-border-sm me-2"></span>서식을 불러오는 중...</div>';
+    }
+
+    const fail = (reason) => {
+      if (!window[cb]) return; // 이미 콜백이 처리됨
+      console.error("기업서식 연동 실패:", reason);
+      if (container) container.innerHTML = '<div class="text-center text-danger small py-3">서식을 불러오지 못했습니다. 잠시 후 새로고침해주세요.</div>';
+      delete window[cb];
+    };
+
+    // 응답이 아예 오지 않는 경우(시트 비공개/네트워크 오류)를 대비한 타임아웃
+    const loadTimer = setTimeout(() => fail('timeout'), 10000);
+
     const script = document.createElement('script');
     script.src = url;
+    script.onerror = () => { clearTimeout(loadTimer); fail('script onerror'); };
     document.body.appendChild(script);
   }
 

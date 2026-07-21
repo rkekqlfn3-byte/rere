@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>코치전용관 | 중소기업 AI훈련 확산센터</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <meta name="description" content="AI훈련코치 전용관 - 컨설팅 표준 3단계 프로세스와 필수 행정 서식을 일괄 제공합니다.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="코치전용관 | 중소기업 AI훈련 확산센터">
+  <meta property="og:description" content="컨설팅 표준 3단계 프로세스와 필수 행정 서식을 일괄 제공합니다.">
+  <meta property="og:image" content="favicon.svg">
+  <meta name="twitter:card" content="summary">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
@@ -44,6 +51,11 @@
     .hero-spec { background: linear-gradient(135deg, var(--primary) 0%, #001a35 100%); color: white; padding: 60px 0; border-radius: 0 0 50px 50px; }
     .process-box { border-left: 4px solid var(--accent); background: var(--light-blue); padding: 20px; border-radius: 0 15px 15px 0; height: 100%; }
     .step-badge { background: var(--primary); color: white; padding: 4px 12px; border-radius: 50px; font-size: 0.8rem; margin-bottom: 10px; display: inline-block; }
+
+    /* 모바일에서는 서식/매뉴얼 목록이 좁은 스크롤 박스에 갇히지 않도록 여유롭게 */
+    @media (max-width: 991.98px) {
+      .custom-scrollbar { max-height: 60vh !important; }
+    }
   </style>
 </head>
 <body>
@@ -61,7 +73,7 @@
       <label class="form-label small fw-bold text-secondary">비밀번호</label>
       <input type="password" id="userPw" class="form-control form-control-lg border-2 shadow-sm" placeholder="비밀번호 입력">
     </div>
-    <button onclick="checkSecureLogin()" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow">인증 및 접속하기</button>
+    <button id="loginBtn" onclick="checkSecureLogin()" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow">인증 및 접속하기</button>
   </div>
 </div>
 
@@ -164,7 +176,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body pt-3">
-                    <p class="text-muted small mb-3">궁금한 점을 남겨주시면, 확인 후 신속하게 구글 시트 Q&A 목록에 답변을 등록해 드립니다.</p>
+                    <p class="text-muted small mb-3">궁금한 점을 남겨주시면, 확인 후 신속하게 답변을 등록해 드립니다.</p>
                     <textarea id="qnaQuestionText" class="form-control mb-3" rows="4" placeholder="질문 내용을 입력해주세요." style="border-radius:10px;"></textarea>
                     <button id="qnaSubmitBtn" onclick="submitQna()" class="btn btn-info w-100 text-white fw-bold rounded-pill shadow-sm">질문 등록하기</button>
                   </div>
@@ -402,7 +414,7 @@
                 <div class="col-lg-10">
 <div class="ratio ratio-16x9 shadow-lg rounded-4 overflow-hidden border bg-dark">
   <iframe 
-    src="https://www.youtube.com/embed/xgPUvi9WR9s?enablejsapi=1&origin=http://localhost" 
+    src="https://www.youtube.com/embed/xgPUvi9WR9s"
     title="중소기업AI훈련표준모델_경남경영자총협회" 
     frameborder="0"
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
@@ -503,11 +515,12 @@
         const question = row.c[0].v;
         const answer = row.c[1] && row.c[1].v ? row.c[1].v : '';
         const author = '익명';
+        // 날짜 열: 작성자 열이 삭제되어 3번째(index 2)로 이동함
         let dateStr = '';
-        if (row.c[3] && row.c[3].f) {
-           dateStr = row.c[3].f;
-        } else if (row.c[3] && row.c[3].v) {
-           dateStr = String(row.c[3].v);
+        if (row.c[2] && row.c[2].f) {
+           dateStr = row.c[2].f;
+        } else if (row.c[2] && row.c[2].v) {
+           dateStr = String(row.c[2].v);
            if(dateStr.startsWith('Date(')) {
                const parts = dateStr.match(/Date\((\d+),(\d+),(\d+)\)/);
                if(parts) {
@@ -758,8 +771,8 @@
       const rows = data.table.rows;
       let packageMap = {
         1: { zipFile: '3.AI훈련코치/AI훈련로드맵 서식/AI훈련로드맵 서식.zip', files: [] },
-        2: { zipFile: '3.AI훈련코치/PBL 과정 개발 서식/PBL 서식.zip', files: [] },
-        3: { zipFile: '3.AI훈련코치/PBL 훈련 서식/PBL 훈련 서식.zip', files: [] }
+        2: { zipFile: '3.AI훈련코치/PBL 과정 개발 서식/PBL 과정 개발 서식.zip', files: [] },
+        3: { zipFile: '3.AI훈련코치/PBL 훈련 서식/PBL 서식.zip', files: [] }
       };
       
       rows.forEach(row => {
@@ -771,10 +784,23 @@
         const label = row.c[2] && row.c[2].v ? row.c[2].v : '-';
         const path = row.c[3] && row.c[3].v ? row.c[3].v : '#';
         
-        let stage = 3; 
-        if(pkgTitle.includes('로드맵')) stage = 1;
-        else if(pkgTitle.includes('과정') || pkgTitle.includes('PBL')) stage = 2;
-        
+        // 시트 패키지명 앞의 번호(예: "1. ...", "2. ...", "3. ...")를 그대로 단계로 사용.
+        // (기존엔 '로드맵/과정/PBL' 단어로 추측해 3단계가 항상 2단계로 잘못 분류됐음)
+        let stage;
+        const numMatch = String(pkgTitle).match(/^\s*([123])\s*[.\-]/);
+        if (numMatch) {
+          stage = parseInt(numMatch[1], 10);
+        } else if (pkgTitle.includes('로드맵')) {
+          stage = 1;
+        } else if (pkgTitle.includes('실시') || pkgTitle.includes('운영') || pkgTitle.includes('훈련 서식')) {
+          stage = 3;
+        } else if (pkgTitle.includes('과정') || pkgTitle.includes('PBL')) {
+          stage = 2;
+        } else {
+          stage = 3;
+        }
+        if (!packageMap[stage]) return; // 1~3 외 값 방어
+
         packageMap[stage].files.push({ badge, label, path });
       });
       
@@ -920,7 +946,7 @@
 async function checkSecureLogin() {
     const id = document.getElementById('userName').value.trim();
     const pw = document.getElementById('userPw').value.trim();
-    const loginBtn = document.querySelector('button');
+    const loginBtn = document.getElementById('loginBtn');
     
     if (!id || !pw) { alert("아이디와 비밀번호를 입력해주세요."); return; }
 
@@ -938,7 +964,8 @@ async function checkSecureLogin() {
     // 코치명단 시트에서 직접 ID/PW 확인 (CORS 우회 JSONP 방식)
     const SHEET_ID = '1FPC06ZjhCXKIzgX51Zkpfi8VNdz_SAGs302vHUWYEs4';
     const cb = 'loginCb_' + new Date().getTime();
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:${cb}&sheet=코치명단`;
+    // 코치 계정(id/password/name)은 'db' 탭에 저장됨. (기존엔 없는 '코치명단'을 부르다 우연히 첫 탭으로 대체돼 동작했음)
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:${cb}&sheet=db`;
 
     window[cb] = function(data) {
       try {
@@ -1041,26 +1068,47 @@ async function saveAccessLog(username) {
 
 async function loadAccessLogsToTable() {
   const tBody = document.getElementById('logTableBody');
-  // 구글 시트에서 데이터를 가져옵니다 (action=getLogs로 요청)
-  const response = await fetch(WEB_APP_URL + "?action=getLogs");
-  const data = await response.json();
-  
-  tBody.innerHTML = "";
-  if (data.length <= 1) { 
-    tBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">기록이 없습니다.</td></tr>`; 
-    return; 
-  }
-  
-  // 최신순으로 출력 (i=1부터 시작하므로 역순 정렬)
-  for(let i = data.length - 1; i > 0; i--) {
-    const row = document.createElement('tr');
-    row.innerHTML = `<th class="text-center">${i}</th><td>${data[i][0]}</td><td>${data[i][1]}</td><td><span class="badge bg-success">성공</span></td>`;
-    tBody.appendChild(row);
+  try {
+    // 구글 시트에서 데이터를 가져옵니다 (action=getLogs로 요청)
+    const response = await fetch(WEB_APP_URL + "?action=getLogs");
+    const data = await response.json();
+
+    tBody.innerHTML = "";
+    if (!Array.isArray(data) || data.length <= 1) {
+      tBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">기록이 없습니다.</td></tr>`;
+      return;
+    }
+
+    // 최신순으로 출력 (i=1부터 시작하므로 역순 정렬)
+    for(let i = data.length - 1; i > 0; i--) {
+      const row = document.createElement('tr');
+      row.innerHTML = `<th class="text-center">${i}</th><td>${data[i][0]}</td><td>${data[i][1]}</td><td><span class="badge bg-success">성공</span></td>`;
+      tBody.appendChild(row);
+    }
+  } catch (e) {
+    console.error("접속 기록 로드 실패:", e);
+    tBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">기록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</td></tr>`;
   }
 }
 
-  function clearSystemLogs() {
-    if (confirm("모든 로그인 기록을 포맷하시겠습니까?")) { localStorage.setItem('gef_coach_access_logs', "[]"); loadAccessLogsToTable(); }
+  async function clearSystemLogs() {
+    if (!confirm("모든 로그인 기록을 삭제하시겠습니까?")) return;
+    try {
+      // 실제 기록은 구글 시트(Apps Script)에 저장되므로 서버에 삭제를 요청합니다.
+      // ※ Apps Script 쪽에 action:'clearLogs' 처리 핸들러가 있어야 실제로 비워집니다.
+      await fetch(WEB_APP_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'clearLogs' })
+      });
+      // no-cors는 응답을 읽을 수 없으므로, 잠시 후 표를 다시 불러와 실제 상태를 반영합니다.
+      setTimeout(loadAccessLogsToTable, 1200);
+      alert("삭제 요청을 보냈습니다. 표를 새로고침합니다.");
+    } catch (e) {
+      console.error("기록 삭제 실패:", e);
+      alert("기록 삭제 요청 중 오류가 발생했습니다.");
+    }
   }
 
   // 페이지 로드 시 기존 로그인 상태 확인
