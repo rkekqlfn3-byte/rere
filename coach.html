@@ -151,9 +151,8 @@
                 </div>
               </div>
             </div>
-          </div>
-        </div>
       </div>
+
 
       <div class="tab-pane fade" id="menu-guide" role="tabpanel">
         <div class="text-center mb-5">
@@ -871,6 +870,11 @@
         body: JSON.stringify({ action: 'addQna', user: username, question: text, time: new Date().toLocaleString('ko-KR') })
       });
       alert('질문이 성공적으로 등록되었습니다!\\n(확인 후 구글 시트 Q&A 목록에 답변이 업데이트됩니다.)');
+      
+      const todayStr = new Date().toLocaleDateString('ko-KR').replace(/\s/g, '');
+      QNA_LIST.push({ question: text, answer: '', author: '익명', date: todayStr });
+      renderQna();
+      
       document.getElementById('qnaQuestionText').value = '';
       bootstrap.Modal.getInstance(document.getElementById('qnaModal')).hide();
     } catch(e) {
