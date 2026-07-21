@@ -604,7 +604,7 @@ async function checkSecureLogin() {
       return;
     }
 
-    loginBtn.innerText = "인증 중...";
+    loginBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>인증 중...`;
     loginBtn.disabled = true;
 
     try {
@@ -624,7 +624,7 @@ async function checkSecureLogin() {
     } catch (error) {
       alert("서버 연결 실패. 다시 시도해주세요.");
     } finally {
-      loginBtn.innerText = "인증 및 접속하기";
+      loginBtn.innerHTML = "인증 및 접속하기";
       loginBtn.disabled = false;
     }
   }
@@ -632,8 +632,24 @@ async function checkSecureLogin() {
   // --- 기존의 기능들은 그대로 유지됩니다 ---
   
   function renderAuthorizedScreen(username) {
-    document.getElementById('login-section').style.display = 'none';
-    document.getElementById('main-content').style.display = 'block';
+    const loginSec = document.getElementById('login-section');
+    const mainSec = document.getElementById('main-content');
+    
+    // 고급스러운 페이드 아웃/인 트랜지션
+    loginSec.style.transition = 'opacity 0.3s ease-out';
+    loginSec.style.opacity = '0';
+    
+    setTimeout(() => {
+      loginSec.style.display = 'none';
+      
+      mainSec.style.display = 'block';
+      mainSec.style.opacity = '0';
+      mainSec.style.transition = 'opacity 0.4s ease-in';
+      
+      setTimeout(() => {
+        mainSec.style.opacity = '1';
+      }, 20);
+    }, 300);
     
     if (username === "관리자" || username === "admin") {
       document.getElementById('userGreeting').innerHTML = `<i class="bi bi-shield-fill-check text-danger"></i> 최고관리자 시스템 접속 중`;
