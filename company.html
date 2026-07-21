@@ -123,16 +123,54 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 <script>
-  // 기업용 서식 파일 목록
-  const companyFiles = [
-    { name: '[서식20] 사업 참여신청서(자가진단표).hwp', path: '2.참여기업/[서식20] 사업 참여신청서(자가진단표).hwp', icon: 'bi-file-earmark-word-fill text-primary' },
-    { name: '[절차안내] HRD4U 가입_기초진단_이음컨설팅.pdf', path: '2.참여기업/[절차안내] HRD4U 회원가입_기초진단_이음컨설팅.pdf', icon: 'bi-file-earmark-pdf-fill text-danger' }
-  ];
+  let companyFiles = [];
+
+  function loadCompanyFilesFromSheet() {
+    const SHEET_ID = '1FPC06ZjhCXKIzgX51Zkpfi8VNdz_SAGs302vHUWYEs4';
+    const cb = 'companyFilesCb_' + new Date().getTime();
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:${cb}&sheet=기업서식`;
+
+    window[cb] = function(data) {
+      try {
+        companyFiles = [];
+        const rows = data.table.rows;
+        rows.forEach((row, idx) => {
+          if (idx === 0) return; // 헤더 무시
+          if (!row || !row.c || !row.c[2] || !row.c[3]) return; // C:표시명, D:경로
+          
+          const displayName = row.c[2].v ? String(row.c[2].v).trim() : '';
+          const filePath = row.c[3].v ? String(row.c[3].v).trim() : '';
+          
+          if (!displayName || !filePath) return;
+
+          let icon = 'bi-file-earmark-fill text-secondary';
+          const lowerPath = filePath.toLowerCase();
+          if (lowerPath.includes('.pdf')) icon = 'bi-file-earmark-pdf-fill text-danger';
+          else if (lowerPath.includes('.hwp')) icon = 'bi-file-earmark-word-fill text-primary';
+          else if (lowerPath.includes('.doc')) icon = 'bi-file-earmark-word-fill text-primary';
+          else if (lowerPath.includes('.xls')) icon = 'bi-file-earmark-excel-fill text-success';
+          else if (lowerPath.includes('.ppt')) icon = 'bi-file-earmark-ppt-fill text-warning';
+          else if (lowerPath.includes('.zip')) icon = 'bi-file-zip-fill text-dark';
+
+          companyFiles.push({ name: displayName, path: filePath, icon: icon });
+        });
+        renderCompanyFiles();
+      } catch (e) {
+        console.error("서식 연동 실패:", e);
+        document.getElementById('company-file-container').innerHTML = '<div class="text-center text-danger small py-3">서식을 불러오지 못했습니다.</div>';
+      }
+      delete window[cb];
+    };
+
+    const script = document.createElement('script');
+    script.src = url;
+    document.body.appendChild(script);
+  }
 
   function renderCompanyFiles() {
     const container = document.getElementById('company-file-container');
     if (!companyFiles || companyFiles.length === 0) {
-      container.innerHTML = '<div class="text-center text-muted small py-3">등록된 파일이 없습니다.</div>';
+      container.innerHTML = '<div class="text-center text-muted small py-3">등록된 파일이 없습니다. (구글 시트를 확인해주세요)</div>';
       return;
     }
 
@@ -193,7 +231,7 @@
   }
 
   // 초기화
-  renderCompanyFiles();
+  loadCompanyFilesFromSheet();
 </script>
 </body>
 </html>
