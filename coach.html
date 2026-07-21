@@ -619,36 +619,14 @@
       NOTICES = [];
       rows.forEach((row, idx) => {
         if(idx === 0) return; // 무조건 첫 번째 줄(헤더) 무시
-        if(!row || !row.c || !row.c[1] || !row.c[1].v) return;
+        if(!row || !row.c || !row.c[0] || !row.c[0].v) return;
         
-        const title = row.c[1].v;
+        const title = String(row.c[0].v).trim();
+        let content = row.c[1] && row.c[1].v ? String(row.c[1].v) : '';
+        // 개행문자를 <br>로 치환하여 보존
+        content = content.replace(/\n/g, '<br>');
         
-        let dateStr = '';
-        if (row.c[0] && row.c[0].f) {
-           dateStr = row.c[0].f;
-        } else if (row.c[0] && row.c[0].v) {
-           dateStr = String(row.c[0].v);
-           if(dateStr.startsWith('Date(')) {
-               const parts = dateStr.match(/Date\((\d+),(\d+),(\d+)\)/);
-               if(parts) {
-                   const y = parts[1];
-                   const m = String(parseInt(parts[2]) + 1).padStart(2, '0');
-                   const d = String(parts[3]).padStart(2, '0');
-                   dateStr = `${y}-${m}-${d}`;
-               }
-           }
-        }
-        
-        if (!dateStr || dateStr.trim() === '') {
-           const today = new Date();
-           const yyyy = today.getFullYear();
-           const mm = String(today.getMonth() + 1).padStart(2, '0');
-           const dd = String(today.getDate()).padStart(2, '0');
-           dateStr = `${yyyy}-${mm}-${dd}`;
-        }
-
-        const content = row.c[2] && row.c[2].v ? row.c[2].v : '';
-        NOTICES.push({ date: dateStr, title, content });
+        NOTICES.push({ date: '', title: title, content: content });
       });
       renderNotices();
     } catch(e) {
