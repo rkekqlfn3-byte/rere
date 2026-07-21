@@ -136,10 +136,10 @@
         const rows = data.table.rows;
         rows.forEach((row, idx) => {
           if (idx === 0) return; // 헤더 무시
-          if (!row || !row.c || !row.c[2] || !row.c[3]) return; // C:표시명, D:경로
+          if (!row || !row.c || !row.c[1] || !row.c[2]) return; // B:표시명, C:경로
           
-          const displayName = row.c[2].v ? String(row.c[2].v).trim() : '';
-          const filePath = row.c[3].v ? String(row.c[3].v).trim() : '';
+          const displayName = row.c[1].v ? String(row.c[1].v).trim() : '';
+          const filePath = row.c[2].v ? String(row.c[2].v).trim() : '';
           
           if (!displayName || !filePath) return;
 
